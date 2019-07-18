@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.lyp.learn.mapper.OrdersMapperCustom">
+
+	<!-- 订单查询关联用户的resultMap
+	    将整个查询的结果映射到com.lyp.learn.pojo.Orders中
+	 -->
+	<resultMap type="com.lyp.learn.pojo.Orders" id="OrdersUserResultMap">
+		<!-- 配置映射的订单信息 -->
+		<!-- id：指定查询列中的唯 一标识，订单信息的中的唯 一标识，如果有多个列组成唯一标识，配置多个id
+			column：订单信息的唯 一标识 列
+			property：订单信息的唯 一标识 列所映射到Orders中哪个属性
+		  -->
+		<id column="id" property="id"/>
+		<result column="user_id" property="userId"/>
+		<result column="number" property="number"/>
+		<result column="createtime" property="createtime"/>
+		<result column="note" property="note"/>
+		
+		<!-- 配置映射的关联的用户信息 -->
+		<!-- association：用于映射关联查询单个对象的信息
+		    property：要将关联查询的用户信息映射到Orders中哪个属性
+		 -->
+		<association property="user"  javaType="com.lyp.learn.pojo.User">
+			<!-- id：关联查询用户的唯 一标识
+			column：指定唯 一标识用户信息的列
+			property：映射到user的哪个属性
+			 -->
+			<id column="user_id" property="id"/>
+			<result column="username" property="username"/>
+			<result column="sex" property="sex"/>
+			<result column="address" property="address"/>
+		</association>
+	</resultMap>
+	
+	<!-- 订单及订单明细的resultMap
+	    使用extends继承，不用在中配置订单信息和用户信息的映射
+	 -->
+	<resultMap type="com.lyp.learn.pojo.Orders" id="OrdersAndOrderDetailResultMap" extends="OrdersUserResultMap">
+		<!-- 订单信息 -->
+		<!-- 用户信息 -->
+		<!-- 使用extends继承，不用在中配置订单信息和用户信息的映射 -->
+		
+		
+		<!-- 订单明细信息
+		一个订单关联查询出了多条明细，要使用collection进行映射
+		collection：对关联查询到多条记录映射到集合对象中
+		property：将关联查询到多条记录映射到com.lyp.learn.pojo.Orders哪个属性
+		ofType：指定映射到list集合属性中pojo的类型
+		 -->
+		 <collection property="orderdetails" ofType="com.lyp.learn.pojo.Orderdetail">
+		 	<!-- id：订单明细唯 一标识
+		 	property:要将订单明细的唯 一标识 映射到com.lyp.learn.pojo.Orderdetail的哪个属性
+		 	  -->
+		 	<id column="orderdetail_id" property="id"/>
+		 	<result column="items_id" property="itemsId"/>
+		 	<result column="items_num" property="itemsNum"/>
+		 	<result column="orders_id" property="ordersId"/>
+		 </collection>
+
+	</resultMap>
+	
+	<!-- 查询用户及购买的商品 -->
+	<resultMap type="com.lyp.learn.pojo.User" id="UserAndItemsResultMap">
+		<!-- 用户信息 -->
+		<id column="id" property="id"/>
+		<result column="username" property="username"/>
+		<result column="sex" property="sex"/>
+		<result column="address" property="address"/>
+		
+		<!--
+		    订单信息
+		    一个用户对应多个订单，使用collection映射
+		 -->
+		 <collection property="ordersList"  ofType="com.lyp.learn.pojo.Orders">
+		 	<id column="ordersId" property="id"/>
+			<result column="number" property="number"/>
+			<result column="createtime" property="createtime"/>
+			<result column="note" property="note"/>
+			
+			 <!--
+			    订单明细
+		        一个订单包括 多个明细
+		       -->
+		  	<collection property="orderdetails" ofType="com.lyp.learn.pojo.Orderdetail">
+		  			<id column="orderdetailId" property="id"/>
+				 	<result column="items_id" property="itemsId"/>
+				 	<result column="items_num" property="itemsNum"/>
+				 	<result column="orders_id" property="ordersId"/>
+                <!--
+				 	商品信息
+		  	        一个订单明细对应一个商品
+		  	     -->
+		  	 	<association property="items" javaType="com.lyp.learn.pojo.Items">
+		  	 		<id column="items_id" property="id"/>
+		  	 		<result column="name" property="name"/>
+		  	 		<result column="price" property="price"/>
+		  	 		<result column="detail" property="detail"/>
+		  	 	</association>
+				 	
+		  	</collection>
+
+		 </collection>
+	
+	</resultMap>
+
+
+
+	<!-- 查询订单关联查询用户信息 -->
+	<select id="findOrdersUser" resultType="com.lyp.learn.pojo.OrdersCustom">
+        SELECT
+          o.id,
+          o.user_id,
+          o.number,
+          o.createtime,
+          o.note,
+          u.username,
+          u.sex,
+          u.address
+        FROM
+          orders o,
+          user u
+        WHERE o.user_id = u.id
+	</select>
+	
+	
+	<!-- 查询订单关联查询用户信息，使用resultmap -->
+	<select id="findOrdersUserResultMap" resultMap="OrdersUserResultMap">
+		SELECT
+          o.id,
+          o.user_id,
+          o.number,
+          o.createtime,
+          o.note,
+          u.username,
+          u.sex,
+          u.address
+        FROM
+          orders o,
+          user u
+        WHERE o.user_id = u.id
+	</select>
+	
+	<!-- 查询订单关联查询用户及订单明细，使用resultmap -->
+	<select id="findOrdersAndOrderDetailResultMap" resultMap="OrdersAndOrderDetailResultMap">
+        SELECT
+          o.id,
+          o.user_id,
+          o.number,
+          o.createtime,
+          o.note,
+          u.username,
+          u.sex,
+          u.address,
+          -- od.id,与上面的 o.id 重名，所以这里要另起别名
+          od.id AS orderdetail_id,
+          od.orders_id,
+          od.items_id,
+          od.items_num
+        FROM
+          orders o,
+          USER u,
+          orderdetail od
+        WHERE o.user_id = u.id AND od.orders_id = o.id
+	</select>
+	
+	<!-- 查询用户及购买的商品信息，使用resultmap -->
+	<select id="findUserAndItemsResultMap" resultMap="UserAndItemsResultMap">
+		SELECT
+          u.id,
+          u.username,
+          u.sex,
+          u.address,
+          -- o.id,与上面的 u.id 重名，所以这里要另起别名
+          o.id AS ordersId,
+          o.number,
+          o.createtime,
+          o.note,
+          -- od.id,与上面的 u.id 重名，所以这里要另起别名
+          od.id AS orderdetailId,
+          od.items_id,
+          od.items_num,
+          it.name,
+          it.price,
+          it.detail
+        FROM
+          user u,
+          orders o,
+          orderdetail od,
+          items it
+        WHERE u.id = o.user_id  AND o.id = od.orders_id AND od.items_id = it.id
+	</select>
+	
+	<!-- 延迟加载的resultMap -->
+	<resultMap type="com.lyp.learn.pojo.Orders" id="OrdersUserLazyLoadingResultMap">
+			<!--对订单信息进行映射配置  -->
+			<id column="id" property="id"/>
+			<result column="user_id" property="userId"/>
+			<result column="number" property="number"/>
+			<result column="createtime" property="createtime"/>
+			<result column="note" property="note"/>
+			<!-- 实现对用户信息进行延迟加载
+			select：指定延迟加载需要执行的statement的id（是根据user_id查询用户信息的statement）
+			要使用userMapper.xml中findUserById完成根据用户id(user_id)用户信息的查询，如果findUserById不在本mapper中需要前边加namespace
+			column：订单信息中关联用户信息查询的列，是user_id
+			关联查询的sql理解为：
+			SELECT orders.*,
+	(SELECT username FROM USER WHERE orders.user_id = user.id)username,
+	(SELECT sex FROM USER WHERE orders.user_id = user.id)sex
+	 FROM orders
+			 -->
+			<association property="user"  javaType="com.lyp.learn.pojo.User"
+			 select="cn.itcast.mybatis.mapper.UserMapper.findUserById" column="user_id">
+			<!-- 实现对用户信息进行延迟加载 -->
+		
+			</association>
+			
+	</resultMap>
+	
+	<!-- 查询订单关联查询用户，用户信息需要延迟加载 -->
+	<select id="findOrdersUserLazyLoading" resultMap="OrdersUserLazyLoadingResultMap">
+		SELECT * FROM orders
+	</select>
+	
+
+</mapper>
+
+
