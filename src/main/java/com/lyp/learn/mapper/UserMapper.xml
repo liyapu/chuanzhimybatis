@@ -9,6 +9,11 @@
         是mapper代理开发的mapper实体类对应的地址
     -->
 <mapper namespace="com.lyp.learn.mapper.UserMapper">
+    <!-- 开启本mapper的namespace下的二缓存
+        type：指定cache接口的实现类的类型，mybatis默认使用PerpetualCache
+        要和ehcache整合，需要配置type为ehcache实现cache接口的类型
+	 -->
+    <cache  type="org.mybatis.caches.ehcache.EhcacheCache"/>
 
 
     <!-- 定义sql片段
@@ -322,7 +327,7 @@
          将插入数据的主键返回，返回到user对象中
 
          SELECT LAST_INSERT_ID()：得到刚insert进去记录的主键值，只适用与自增主键
-
+                LAST_INSERT_ID():是mysql的函数，返回auto_increment自增列新记录id值。
          keyProperty：将查询到主键值设置到parameterType指定的对象的哪个属性
          order：SELECT LAST_INSERT_ID()执行顺序，相对于insert语句来说它的执行顺序
                 selectKey的执行顺序，是相对与insert语句来说，

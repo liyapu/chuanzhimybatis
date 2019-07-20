@@ -11,11 +11,19 @@
         </properties>
 
         <settings>
-            <!-- 打印查询语句 -->
+            <!-- 打印查询语句
+            logImpl 可选的值有：SLF4J、LOG4J、LOG4J2、JDK_LOGGING、COMMONS_LOGGING、STDOUT_LOGGING、NO_LOGGING
+            -->
             <setting name="logImpl" value="LOG4J" />
+            <!-- 打开延迟加载 的开关 -->
+            <setting name="lazyLoadingEnabled" value="true"/>
+            <!-- 将积极加载改为消极加载即按需要加载 -->
+            <setting name="aggressiveLazyLoading" value="false"/>
+            <!-- 开启二级缓存 -->
+            <setting name="cacheEnabled" value="true"/>
         </settings>
 
-        <!--配置别名-->
+    <!--配置别名-->
     <typeAliases>
         <!--
             配置单个别名

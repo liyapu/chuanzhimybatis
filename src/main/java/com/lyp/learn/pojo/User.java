@@ -1,10 +1,12 @@
 package com.lyp.learn.pojo;
 
+import java.io.Serializable;
 import java.util.Date;
 import java.util.List;
 
-public class User {
+public class User implements Serializable {
 
+    private static final long serialVersionUID = -324209987829434765L;
     //属性名和数据库表的字段对应
     private int id;
     private String username;// 用户姓名

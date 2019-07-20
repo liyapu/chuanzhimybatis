@@ -4,6 +4,7 @@ import com.lyp.learn.pojo.User;
 import com.lyp.learn.pojo.UserCustom;
 import com.lyp.learn.pojo.UserQueryVo;
 import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.Configuration;
 import org.apache.ibatis.session.SqlSession;
 import org.apache.ibatis.session.SqlSessionFactory;
 import org.apache.ibatis.session.SqlSessionFactoryBuilder;
@@ -12,10 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 /**
  * @Author: liyapu
@@ -142,9 +140,9 @@ class UserMapperTest {
         //创建UserMapper对象，mybatis自动生成mapper代理对象
         UserMapper userMapper = sqlSession.getMapper(UserMapper.class);
 
-        List<User> users = userMapper.findUserByName("小明");
+//        List<User> users = userMapper.findUserByName("小明");
 //        模拟sql注入
-//        List<User> users = userMapper.findUserByName("小明' or 1=1 or id like '%");
+        List<User> users = userMapper.findUserByName("小明' or 1=1 or id like '%");
         System.out.println(users);
 
         //释放资源
@@ -464,13 +462,15 @@ class UserMapperTest {
         user.setSex("2");
         user.setAddress("商丘");
 
-        userMapper.insertUser3(user);
+        int rows =  userMapper.insertUser3(user);
 
         //显示提交
         sqlSession.commit();
 
         //释放资源
         sqlSession.close();
+        System.out.println("rows = " + rows);
+        System.out.println("获取刚才新插入的自增主键 ： " + user.getId() );
     }
 
     @Test
@@ -612,5 +612,15 @@ class UserMapperTest {
 
         sqlSession.close();
         System.out.println(users);
+    }
+
+
+    @Test
+    void testTypeAlias(){
+        Configuration con = sqlSessionFactory.getConfiguration();
+        Map<String, Class<?>> typeMap = con.getTypeAliasRegistry().getTypeAliases();
+        for(Map.Entry<String, Class<?>> entry: typeMap.entrySet()) {
+            System.out.println(entry.getKey() + " ================> " + entry.getValue().getSimpleName());
+        }
     }
 }
